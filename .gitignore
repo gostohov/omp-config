@@ -1,0 +1,16 @@
+# OMP credentials and local runtime state
+.env
+*.key
+*.db
+*.db-shm
+*.db-wal
+cache/
+sessions/
+terminal-sessions/
+memories/
+
+# Diagnostics and local backups
+*.log
+omp-llm-request-*.json
+dump*.txt
+*.bak-*

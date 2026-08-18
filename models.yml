@@ -1,0 +1,53 @@
+# oh-my-pi 17.3.4: кастомный AIS endpoint для Qwen3.6:27b
+# Файл назначения: ~/.omp/agent/models.yml
+
+providers:
+  ais-anthropic:
+    baseUrl: https://api.ais.mir/v1
+    api: openai-completions
+    auth: apiKey
+
+    # OMP сначала трактует значение как имя переменной окружения.
+    # Реальный секрет положите в ~/.omp/agent/.env строкой AIS_API_KEY=...
+    # и не храните его в этом YAML.
+    apiKey: AIS_API_KEY
+    authHeader: true
+
+    # Явная запись модели надёжнее runtime discovery и фиксирует реальные
+    # лимиты AIS. ID должен побайтно совпадать с ID, принимаемым endpoint.
+    models:
+      - id: "qwen3.6:27b"
+        name: "Qwen 3.6 27B (AIS)"
+
+        # reasoning=true нужен OMP, чтобы суффикс :off действительно управлял
+        # thinking на уровне запроса, а не просто скрывал блок мыслей.
+        reasoning: true
+        supportsTools: true
+        input:
+          - text
+          - image
+
+        # Сохраняем лимиты вашего AIS endpoint. 16384 соответствует рабочему
+        # пределу ответа в non-thinking режиме и входит в окно 131k.
+        contextWindow: 131000
+        maxTokens: 16384
+
+        compat:
+          # Qwen/vLLM ожидает system, а не OpenAI developer role.
+          supportsDeveloperRole: false
+          supportsMultipleSystemMessages: false
+          supportsStore: false
+
+          # В OMP формат qwen отправляет top-level enable_thinking. При :off
+          # AIS получит enable_thinking=false.
+          supportsReasoningEffort: false
+          thinkingFormat: qwen
+
+          # Не добавляем strict к JSON Schema tools: не все Qwen gateways
+          # принимают OpenAI strict function definitions.
+          supportsStrictMode: false
+          toolStrictMode: none
+
+          # Если AIS вернёт ошибку о tool_choice в thinking mode, оставьте
+          # роли с :off. Отключать tool_choice глобально заранее не нужно:
+          # это ухудшает принудительное продолжение и goal/plan transitions.

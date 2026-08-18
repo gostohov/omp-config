@@ -1,0 +1,215 @@
+# oh-my-pi 17.3.4 + Qwen3.6:27b
+# Файл назначения: ~/.omp/agent/config.yml
+
+# OMP обращается напрямую к HTTP API SearXNG.
+# Это адрес самого SearXNG, а не MCP-прокси.
+searxng:
+  endpoint: http://127.0.0.1:8080
+
+providers:
+  # Публичный поиск разрешён только через локальный SearXNG.
+  webSearchOrder:
+    - searxng
+  webSearchExclude:
+    - perplexity
+    - gemini
+    - anthropic
+    - codex
+    - xai
+    - zai
+    - exa
+    - tinyfish
+    - jina
+    - kagi
+    - tavily
+    - firecrawl
+    - brave
+    - kimi
+    - parallel
+    - synthetic
+    - startpage
+    - duckduckgo
+    - ecosia
+    - google
+    - mojeek
+    - public
+
+  # Заголовки генерируются лёгкой локальной CPU-моделью. Память использует
+  # корпоративный AIS endpoint, а проверка преждевременной остановки —
+  # локальную модель, предназначенную для memory/classifier-задач.
+  tinyModel: lfm2-350m
+  memoryModel: online
+  unexpectedStopModel: lfm2-1.2b
+
+exa:
+  enabled: false
+
+# Полностью исключаем discovery-источники других агентов и IDE. Они больше не
+# смогут добавлять context-файлы, MCP, команды, skills, hooks, tools, prompts
+# или settings. Нативные источники OMP, OMP plugins и обычный .mcp.json остаются.
+disabledProviders:
+  - agent-plugins
+  - agents
+  - agents-md
+  - claude
+  - claude-plugins
+  - cline
+  - codex
+  - cursor
+  - gemini
+  - github
+  - opencode
+  - vscode
+  - windsurf
+
+# Защищаем credential-shaped значения до отправки модели и не используем
+# внешние сервисы OMP для компактации, отчётов или проверки обновлений.
+secrets:
+  enabled: true
+
+dev:
+  autoqa: false
+
+startup:
+  checkUpdate: true
+  setupWizard: false
+
+share:
+  redactSecrets: true
+
+browser:
+  enabled: false
+  # Relay управляет выбранными вкладками авторизованного Windows Chrome через
+  # unpacked extension, не открывая CDP-порт в Windows.
+  relay: false
+  relayUrl: http://127.0.0.1:9224
+  # Остаётся fallback для явного browser-вызова с app.relay=false.
+  headless: true
+
+images:
+  # Изображения отправляются только корпоративному AIS при явном приложении.
+  blockImages: false
+
+# Не продолжаем автоматически потенциально устаревший диалог из каталога.
+autoResume: false
+
+# Все роли запускаются без thinking: это текущий изолированный A/B-тест против
+# преждевременных остановок Qwen. Значение заключено в кавычки, чтобы YAML 1.1
+# не преобразовал off в boolean false.
+defaultThinkingLevel: "off"
+hideThinkingBlock: true
+
+# Параметры Qwen3.6:27b для non-thinking режима.
+# Они передаются AIS через OpenAI-compatible /chat/completions.
+temperature: 0.7
+topP: 0.8
+topK: 20
+presencePenalty: 1.5
+repetitionPenalty: 1.0
+
+# Один и тот же endpoint обслуживает все роли. Значение роли в OMP 17.3.4 —
+# строка provider/model:thinking, а не объект с полями model/thinking.
+modelRoles:
+  default: "ais-anthropic/qwen3.6:27b:off"
+  plan: "ais-anthropic/qwen3.6:27b:off"
+  slow: "ais-anthropic/qwen3.6:27b:off"
+  smol: "ais-anthropic/qwen3.6:27b:off"
+  task: "ais-anthropic/qwen3.6:27b:off"
+  tiny: "ais-anthropic/qwen3.6:27b:off"
+  commit: "ais-anthropic/qwen3.6:27b:off"
+  designer: "ais-anthropic/qwen3.6:27b:off"
+  vision: "ais-anthropic/qwen3.6:27b:off"
+
+# Переживаем краткие сбои AIS, но не ждём многоминутные retry-окна.
+retry:
+  enabled: true
+  maxRetries: 5
+  baseDelayMs: 500
+  maxDelayMs: 30000
+  modelFallback: false
+
+# Для 27B-модели и одного inference endpoint параллельные сабагенты создают
+# конкуренцию за контекст/слоты. Плоская схема task проще для tool calling.
+task:
+  maxConcurrency: 1
+  maxRecursionDepth: 0
+  batch: false
+  eager: default
+
+tools:
+  # Почти полная автономность; отдельные критические bash-команды ниже всё
+  # равно требуют подтверждения.
+  approvalMode: yolo
+  # auto оставляет provider-native function calling, так как в models.yml
+  # модель явно объявлена с supportsTools: true.
+  format: auto
+
+# Направляем Qwen к специализированным read/grep/write/hub tools вместо их
+# менее наблюдаемых shell-аналогов.
+bashInterceptor:
+  enabled: true
+
+# Для Qwen full descriptors остаются в JSON-схемах tools и не дублируются
+# в системном prompt. Это снижает его размер без отключения описаний tools.
+inlineToolDescriptors: "off"
+
+model:
+  toolCallLoopGuard:
+    enabled: true
+    # Раннее вмешательство после трёх полностью одинаковых вызовов подряд.
+    threshold: 3
+
+features:
+  # Если Qwen обещал действие, но завершил turn без tool call, OMP использует
+  # tiny-role classifier и автоматически предлагает продолжить выполнение.
+  unexpectedStopDetection: true
+
+compaction:
+  strategy: snapcompact
+  # Не доводим 131k-контекст до края: качество tool calls у Qwen снижается
+  # раньше формального переполнения. 80% оставляет запас для ответа и tools.
+  thresholdPercent: 80
+  remoteEnabled: false
+  remoteStreamingV2Enabled: false
+
+# Локальная SQLite-память изолирована по проектам. FTS-режим не загружает
+# embedding-модель и подходит для CPU-only машины.
+memory:
+  backend: mnemopi
+
+mnemopi:
+  scoping: per-project
+  noEmbeddings: true
+  llmMode: smol
+  autoRecall: true
+  autoRetain: true
+  retainEveryNTurns: 4
+  recallLimit: 4
+  injectionTokenLimit: 2000
+
+skills:
+  enabled: true
+
+  # Дополнительная защита на уровне skills. Основное отключение всех типов
+  # настроек выполняет disabledProviders выше.
+  enableCodexUser: false
+  enableClaudeUser: false
+  enableClaudeProject: false
+  # native = собственные ~/.omp/agent/skills и <project>/.omp/skills.
+  enablePiUser: true
+  enablePiProject: true
+  enableAgentsUser: false
+  enableAgentsProject: false
+
+  # Также загружаются явно выбранный каталог и managed skills самого OMP.
+  customDirectories:
+    - ~/.omp/skills
+
+# Advisor выключен: проверка Qwen самой собой добавляет стоимость и контекст,
+# но почти не даёт независимого второго мнения.
+advisor:
+  enabled: false
+
+setupVersion: 1
+
+autocompleteMaxVisible: 15
