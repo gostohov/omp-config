@@ -1,0 +1,72 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "*": "allow",
+    "websearch": "deny",
+    "skill": {
+      "*": "allow",
+      "playwright-cli": "allow"
+    },
+    "bash": {
+      "*": "allow",
+      "playwright-cli *": "allow",
+      "npx *playwright-cli*": "deny",
+      "npx *@playwright/cli*": "deny",
+      "npm *install*playwright-cli*": "deny",
+      "npm *install*@playwright/cli*": "deny",
+      "npm *exec*playwright-cli*": "deny",
+      "npm *exec*@playwright/cli*": "deny",
+      "playwright-cli *run-code*": "ask",
+      "playwright-cli *upload*": "ask",
+      "playwright-cli *drop*": "ask",
+      "playwright-cli *state-save*": "ask",
+      "playwright-cli *delete-data*": "ask",
+      "playwright-cli *close-all*": "ask",
+      "playwright-cli *kill-all*": "ask"
+    }
+  },
+  "model": "ais-anthropic/qwen3.6:27b",
+  "provider": {
+    "ais-anthropic": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "AIS Anthropic",
+      "options": {
+        "baseURL": "https://api.ais.mir/v1",
+        "apiKey": "{env:AIS_API_KEY}"
+      },
+      "models": {
+        "qwen3.6:27b": {
+          "name": "qwen3.6:27b",
+          "limit": {
+            "context": 131000,
+            "output": 16384
+          }
+        }
+      }
+    }
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "tail_turns": 4,
+    "preserve_recent_tokens": 24000,
+    "reserved": 16384
+  },
+  "mcp": {
+    "searxng": {
+      "type": "remote",
+      "url": "http://127.0.0.1:3001/mcp",
+      "enabled": true,
+      "timeout": 15000
+    },
+    "windows-chrome": {
+      "type": "local",
+      "command": [
+        "/mnt/c/Users/gostokhovza/scoop/apps/nodejs-lts/current/node.exe",
+        "C:\\Users\\gostokhovza\\Documents\\tools\\node_modules\\@playwright\\mcp\\cli.js",
+        "--extension"
+      ],
+      "enabled": false
+    }
+  }
+}

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve the npm-generated Windows PowerShell shim once, then call it through
+# powershell.exe. This keeps @playwright/cli and Chrome on Windows while the
+# OpenCode skill and shell remain in WSL.
+cache_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/opencode-playwright"
+cache_file="${cache_dir}/playwright-cli-ps1-path"
+cli_ps1="${PLAYWRIGHT_CLI_PS1:-}"
+
+if [[ -z "${cli_ps1}" && "${PLAYWRIGHT_CLI_REFRESH:-0}" != "1" && -r "${cache_file}" ]]; then
+  IFS= read -r cli_ps1 < "${cache_file}"
+fi
+
+if [[ -z "${cli_ps1}" ]]; then
+  if ! cli_ps1="$(powershell.exe -NoLogo -NoProfile -NonInteractive -Command \
+    '(Get-Command playwright-cli.ps1 -ErrorAction Stop).Source')"; then
+    printf '%s\n' \
+      'playwright-cli: Windows shim not found. Run npm install -g @playwright/cli in Windows.' >&2
+    exit 127
+  fi
+
+  cli_ps1="${cli_ps1//$'\r'/}"
+  cli_ps1="${cli_ps1%%$'\n'*}"
+  if [[ -z "${cli_ps1}" ]]; then
+    printf '%s\n' 'playwright-cli: PowerShell returned an empty shim path.' >&2
+    exit 127
+  fi
+
+  mkdir -p "${cache_dir}"
+  umask 077
+  printf '%s\n' "${cli_ps1}" > "${cache_file}"
+fi
+
+exec powershell.exe \
+  -NoLogo \
+  -NoProfile \
+  -NonInteractive \
+  -ExecutionPolicy Bypass \
+  -File "${cli_ps1}" \
+  "$@"

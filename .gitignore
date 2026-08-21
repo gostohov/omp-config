@@ -14,3 +14,6 @@ memories/
 omp-llm-request-*.json
 dump*.txt
 *.bak-*
+
+# Playwright CLI runtime artifacts
+.playwright-cli/

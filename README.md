@@ -1,4 +1,4 @@
-# OMP config
+# OMP and OpenCode config
 
 Версионируемая часть конфигурации oh-my-pi 17.3.4 для Qwen3.6:27b через
 OpenAI-compatible AIS endpoint.
@@ -31,3 +31,8 @@ omp tiny-models download lfm2-1.2b
 После обновления файлов нужно полностью перезапустить OMP и начать свежую
 сессию. Для проверки non-thinking режима в новом request dump ожидается
 `Thinking Level: off`.
+
+## OpenCode
+
+Кандидат конфигурации OpenCode, WSL-wrapper для глобального Windows
+`@playwright/cli` и адаптированный skill находятся в каталоге [`opencode`](opencode/README.md).
