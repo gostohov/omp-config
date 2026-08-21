@@ -1,29 +1,9 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"],
   "permission": {
     "*": "allow",
-    "websearch": "deny",
-    "skill": {
-      "*": "allow",
-      "playwright-cli": "allow"
-    },
-    "bash": {
-      "*": "allow",
-      "playwright-cli *": "allow",
-      "npx *playwright-cli*": "deny",
-      "npx *@playwright/cli*": "deny",
-      "npm *install*playwright-cli*": "deny",
-      "npm *install*@playwright/cli*": "deny",
-      "npm *exec*playwright-cli*": "deny",
-      "npm *exec*@playwright/cli*": "deny",
-      "playwright-cli *run-code*": "ask",
-      "playwright-cli *upload*": "ask",
-      "playwright-cli *drop*": "ask",
-      "playwright-cli *state-save*": "ask",
-      "playwright-cli *delete-data*": "ask",
-      "playwright-cli *close-all*": "ask",
-      "playwright-cli *kill-all*": "ask"
-    }
+    "websearch": "deny"
   },
   "model": "ais-anthropic/qwen3.6:27b",
   "provider": {
@@ -31,8 +11,7 @@
       "npm": "@ai-sdk/anthropic",
       "name": "AIS Anthropic",
       "options": {
-        "baseURL": "https://api.ais.mir/v1",
-        "apiKey": "{env:AIS_API_KEY}"
+        "baseURL": "https://api.ais.mir/v1"
       },
       "models": {
         "qwen3.6:27b": {
@@ -55,18 +34,9 @@
   "mcp": {
     "searxng": {
       "type": "remote",
-      "url": "http://127.0.0.1:3001/mcp",
+      "url": "http://127.0.0.1:16445/mcp",
       "enabled": true,
       "timeout": 15000
-    },
-    "windows-chrome": {
-      "type": "local",
-      "command": [
-        "/mnt/c/Users/gostokhovza/scoop/apps/nodejs-lts/current/node.exe",
-        "C:\\Users\\gostokhovza\\Documents\\tools\\node_modules\\@playwright\\mcp\\cli.js",
-        "--extension"
-      ],
-      "enabled": false
     }
   }
 }
