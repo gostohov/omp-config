@@ -1,4 +1,4 @@
-# oh-my-pi 17.3.4 + Qwen3.6:27b
+# Проверено с oh-my-pi 17.4.2 + Qwen3.6:27b
 # Файл назначения: ~/.omp/agent/config.yml
 
 # OMP обращается напрямую к HTTP API SearXNG.
@@ -7,6 +7,11 @@ searxng:
   endpoint: http://127.0.0.1:8080
 
 providers:
+  # Общий для локальных OMP-процессов предел запросов к AIS. Пять sub-агентов
+  # могут работать параллельно, оставляя шестой слот родительскому агенту.
+  maxInFlightRequests:
+    ais: 6
+
   # Публичный поиск разрешён только через локальный SearXNG.
   webSearchOrder:
     - searxng
@@ -62,11 +67,12 @@ disabledProviders:
   - vscode
   - windsurf
 
-# Защищаем credential-shaped значения до отправки модели и не используем
-# внешние сервисы OMP для компактации, отчётов или проверки обновлений.
+# Маскируем credential-shaped значения до отправки модели и при публикации.
 secrets:
   enabled: true
 
+# Не отправляем автоматические QA-отчёты. Проверку обновлений оставляем
+# включённой, а повторный setup wizard после первичной настройки пропускаем.
 dev:
   autoqa: false
 
@@ -77,13 +83,13 @@ startup:
 share:
   redactSecrets: true
 
+# Встроенный browser и relay выключены: авторизованным Windows Chrome управляет
+# установленный отдельно Playwright CLI skill через WSL-wrapper.
 browser:
   enabled: false
-  # Relay управляет выбранными вкладками авторизованного Windows Chrome через
-  # unpacked extension, не открывая CDP-порт в Windows.
   relay: false
   relayUrl: http://127.0.0.1:9224
-  # Остаётся fallback для явного browser-вызова с app.relay=false.
+  # Неактивный fallback на случай будущего включения встроенного browser tool.
   headless: true
 
 images:
@@ -93,32 +99,32 @@ images:
 # Не продолжаем автоматически потенциально устаревший диалог из каталога.
 autoResume: false
 
-# Все роли запускаются без thinking: это текущий изолированный A/B-тест против
-# преждевременных остановок Qwen. Значение заключено в кавычки, чтобы YAML 1.1
-# не преобразовал off в boolean false.
+# Все роли запускаются без thinking: этот режим оказался стабильнее в длинных
+# tool-heavy задачах. Детектор ниже остаётся страховкой от преждевременных
+# остановок. Кавычки не дают YAML 1.1 преобразовать off в boolean false.
 defaultThinkingLevel: "off"
 hideThinkingBlock: true
 
 # Параметры Qwen3.6:27b для non-thinking режима.
-# Они передаются AIS через OpenAI-compatible /chat/completions.
+# Формат запроса определяет активный provider из models.yml.
 temperature: 0.7
 topP: 0.8
 topK: 20
 presencePenalty: 1.5
 repetitionPenalty: 1.0
 
-# Один и тот же endpoint обслуживает все роли. Значение роли в OMP 17.3.4 —
-# строка provider/model:thinking, а не объект с полями model/thinking.
+# Все роли направляем через проверенный Anthropic Messages transport.
+# Значение роли в OMP 17.4.2 — строка provider/model:thinking, а не объект.
 modelRoles:
-  default: "ais-anthropic/qwen3.6:27b:off"
-  plan: "ais-anthropic/qwen3.6:27b:off"
-  slow: "ais-anthropic/qwen3.6:27b:off"
-  smol: "ais-anthropic/qwen3.6:27b:off"
-  task: "ais-anthropic/qwen3.6:27b:off"
-  tiny: "ais-anthropic/qwen3.6:27b:off"
-  commit: "ais-anthropic/qwen3.6:27b:off"
-  designer: "ais-anthropic/qwen3.6:27b:off"
-  vision: "ais-anthropic/qwen3.6:27b:off"
+  default: "ais/qwen3.6:27b:off"
+  plan: "ais/qwen3.6:27b:off"
+  slow: "ais/qwen3.6:27b:off"
+  smol: "ais/qwen3.6:27b:off"
+  task: "ais/qwen3.6:27b:off"
+  tiny: "ais/qwen3.6:27b:off"
+  commit: "ais/qwen3.6:27b:off"
+  designer: "ais/qwen3.6:27b:off"
+  vision: "ais/qwen3.6:27b:off"
 
 # Переживаем краткие сбои AIS, но не ждём многоминутные retry-окна.
 retry:
@@ -128,17 +134,20 @@ retry:
   maxDelayMs: 30000
   modelFallback: false
 
-# Для 27B-модели и одного inference endpoint параллельные сабагенты создают
-# конкуренцию за контекст/слоты. Плоская схема task проще для tool calling.
+# Фоновые task-задания включены явно. Основной агент может параллельно запустить
+# до пяти независимых задач, но дочерние агенты не создают следующий уровень.
+async:
+  enabled: true
+
 task:
-  maxConcurrency: 1
-  maxRecursionDepth: 0
+  maxConcurrency: 5
+  maxRecursionDepth: 1
   batch: false
-  eager: default
+  eager: preferred
 
 tools:
-  # Почти полная автономность; отдельные критические bash-команды ниже всё
-  # равно требуют подтверждения.
+  # Tool calls выполняются без интерактивных подтверждений; опасные операции
+  # по-прежнему ограничиваются системными правилами OMP и инструкциями проекта.
   approvalMode: yolo
   # auto оставляет provider-native function calling, так как в models.yml
   # модель явно объявлена с supportsTools: true.
@@ -165,11 +174,12 @@ features:
   unexpectedStopDetection: true
 
 compaction:
-  strategy: snapcompact
+  # Используем только локальный snapcompact, без внешней remote-компактации.
+  methodOrder:
+    - snapcompact
   # Не доводим 131k-контекст до края: качество tool calls у Qwen снижается
   # раньше формального переполнения. 80% оставляет запас для ответа и tools.
   thresholdPercent: 80
-  remoteEnabled: false
   remoteStreamingV2Enabled: false
 
 # Локальная SQLite-память изолирована по проектам. FTS-режим не загружает
@@ -201,12 +211,8 @@ skills:
   enableAgentsUser: false
   enableAgentsProject: false
 
-  # Также загружаются явно выбранный каталог и managed skills самого OMP.
-  customDirectories:
-    - ~/.omp/skills
-
-# Advisor выключен: проверка Qwen самой собой добавляет стоимость и контекст,
-# но почти не даёт независимого второго мнения.
+# Advisor выключен: та же Qwen-модель добавляет запрос и контекст, но не даёт
+# независимого второго мнения.
 advisor:
   enabled: false
 

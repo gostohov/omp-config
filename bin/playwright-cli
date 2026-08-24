@@ -3,8 +3,8 @@ set -euo pipefail
 
 # Resolve the npm-generated Windows PowerShell shim once, then call it through
 # powershell.exe. This keeps @playwright/cli and Chrome on Windows while the
-# OpenCode skill and shell remain in WSL.
-cache_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/opencode-playwright"
+# OMP skill and shell remain in WSL.
+cache_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/omp-playwright"
 cache_file="${cache_dir}/playwright-cli-ps1-path"
 cli_ps1="${PLAYWRIGHT_CLI_PS1:-}"
 
