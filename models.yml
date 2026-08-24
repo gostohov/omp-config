@@ -1,9 +1,4 @@
-# Проверено с oh-my-pi 18.0.4: кастомный AIS endpoint для Qwen3.6:27b
-# Файл назначения: ~/.omp/agent/models.yml
-
 providers:
-  # Основной transport: Anthropic Messages показал стабильную работу в
-  # длительном tool-heavy прогоне.
   ais:
     baseUrl: https://api.ais.mir/v1
     api: anthropic-messages
@@ -24,5 +19,3 @@ providers:
           - image
         contextWindow: 131000
         maxTokens: 16384
-
-        # Anthropic-specific compat OMP определяет автоматически.

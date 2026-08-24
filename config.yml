@@ -1,4 +1,4 @@
-# Проверено с oh-my-pi 18.0.4 + Qwen3.6:27b
+# Конфигурация oh-my-pi для Qwen3.6:27b через AIS
 # Файл назначения: ~/.omp/agent/config.yml
 
 # OMP обращается напрямую к HTTP API SearXNG.
@@ -120,7 +120,7 @@ presencePenalty: 1.5
 repetitionPenalty: 1.0
 
 # Все роли направляем через проверенный Anthropic Messages transport.
-# Значение роли в OMP 18.0.4 — строка provider/model:thinking, а не объект.
+# Формат роли — строка provider/model:thinking, а не объект.
 modelRoles:
   default: "ais/qwen3.6:27b:off"
   plan: "ais/qwen3.6:27b:off"
@@ -140,15 +140,19 @@ retry:
   maxDelayMs: 30000
   modelFallback: false
 
-# Фоновые task-задания включены явно. Основной агент может параллельно запустить
-# до пяти независимых задач, но дочерние агенты не создают следующий уровень.
+# Фоновые task-задания включены явно.
 async:
   enabled: true
 
 task:
+  # До пяти sub-агентов могут работать параллельно. Вместе с родительским
+  # агентом это соответствует лимиту AIS maxInFlightRequests: 6 выше.
   maxConcurrency: 5
+  # Разрешён только один дочерний уровень: sub-агенты не порождают новых.
   maxRecursionDepth: 1
+  # Сохраняем проверенный плоский формат отдельных task tool calls.
   batch: false
+  # OMP предпочитает сразу запускать подходящие независимые задачи в фоне.
   eager: preferred
 
 tools:
