@@ -1,6 +1,6 @@
 # OMP config
 
-Версионируемая часть конфигурации oh-my-pi 17.4.2 для Qwen3.6:27b через AIS.
+Версионируемая часть конфигурации oh-my-pi 18.0.4 для Qwen3.6:27b через AIS.
 Provider использует Anthropic Messages.
 
 В репозитории намеренно нет `.env`, ключей, SQLite-баз, сессий, кэша и runtime-
@@ -53,7 +53,10 @@ omp tiny-models download lfm2-1.2b
 omp --version
 ```
 
-Ожидаемая версия для этого снимка конфигурации — `17.4.2`.
+Ожидаемая версия для этого снимка конфигурации — `18.0.4`. Режим
+`features.unexpectedStopDetection: smart` сохраняет классификацию текстовых
+остановок через `lfm2-1.2b`, а `tui.resizeScrollback: preserve` предотвращает
+очистку terminal scrollback при изменении размера окна.
 
 ## Установка Playwright CLI skill
 

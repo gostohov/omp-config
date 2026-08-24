@@ -1,4 +1,4 @@
-# Проверено с oh-my-pi 17.4.2 + Qwen3.6:27b
+# Проверено с oh-my-pi 18.0.4 + Qwen3.6:27b
 # Файл назначения: ~/.omp/agent/config.yml
 
 # OMP обращается напрямую к HTTP API SearXNG.
@@ -83,6 +83,12 @@ startup:
 share:
   redactSecrets: true
 
+# Не очищаем terminal scrollback при изменении размера окна. Старые строки
+# сохраняют прежний перенос, а текущий viewport перерисовывается без потери
+# предшествующей запуску OMP истории.
+tui:
+  resizeScrollback: preserve
+
 # Встроенный browser и relay выключены: авторизованным Windows Chrome управляет
 # установленный отдельно Playwright CLI skill через WSL-wrapper.
 browser:
@@ -114,7 +120,7 @@ presencePenalty: 1.5
 repetitionPenalty: 1.0
 
 # Все роли направляем через проверенный Anthropic Messages transport.
-# Значение роли в OMP 17.4.2 — строка provider/model:thinking, а не объект.
+# Значение роли в OMP 18.0.4 — строка provider/model:thinking, а не объект.
 modelRoles:
   default: "ais/qwen3.6:27b:off"
   plan: "ais/qwen3.6:27b:off"
@@ -169,9 +175,9 @@ model:
     threshold: 3
 
 features:
-  # Если Qwen обещал действие, но завершил turn без tool call, OMP использует
-  # tiny-role classifier и автоматически предлагает продолжить выполнение.
-  unexpectedStopDetection: true
+  # Smart включает механическое восстановление невидимых остановок и локальный
+  # classifier для текстовых обещаний действия, завершившихся без tool call.
+  unexpectedStopDetection: smart
 
 compaction:
   # Используем только локальный snapcompact, без внешней remote-компактации.

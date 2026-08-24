@@ -1,4 +1,4 @@
-# Проверено с oh-my-pi 17.4.2: кастомный AIS endpoint для Qwen3.6:27b
+# Проверено с oh-my-pi 18.0.4: кастомный AIS endpoint для Qwen3.6:27b
 # Файл назначения: ~/.omp/agent/models.yml
 
 providers:
