@@ -42,7 +42,7 @@ providers:
   # Заголовки генерируются лёгкой локальной CPU-моделью. Память использует
   # корпоративный AIS endpoint, а проверка преждевременной остановки —
   # локальную модель, предназначенную для memory/classifier-задач.
-  tinyModel: lfm2-350m
+  tinyModel: lfm2.5-230m
   memoryModel: online
   unexpectedStopModel: lfm2-1.2b
 
@@ -129,7 +129,6 @@ modelRoles:
   task: "ais/qwen3.6:27b:off"
   tiny: "ais/qwen3.6:27b:off"
   commit: "ais/qwen3.6:27b:off"
-  designer: "ais/qwen3.6:27b:off"
   vision: "ais/qwen3.6:27b:off"
 
 # Переживаем краткие сбои AIS, но не ждём многоминутные retry-окна.

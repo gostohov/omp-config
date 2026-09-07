@@ -4,7 +4,7 @@
 
 | Параметр | Значение |
 | --- | --- |
-| Версия OMP | `18.0.4` |
+| Версия OMP | `18.1.13` |
 | Модель | `Qwen3.6:27b` |
 | Provider | `AIS` |
 | Транспорт | `Anthropic Messages` |
@@ -40,7 +40,7 @@ chmod 600 ~/.omp/agent/.env
 Локальные модели, используемые конфигурацией:
 
 ```bash
-omp tiny-models download lfm2-350m
+omp tiny-models download lfm2.5-230m
 omp tiny-models download lfm2-1.2b
 ```
 
