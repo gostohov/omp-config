@@ -8,6 +8,25 @@ cache_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/omp-playwright"
 cache_file="${cache_dir}/playwright-cli-ps1-path"
 cli_ps1="${PLAYWRIGHT_CLI_PS1:-}"
 
+# WSL only forwards explicitly listed Linux variables to Windows processes.
+# Keep the extension token process-local: expose its name through WSLENV, but
+# never persist or pass its value as a command-line argument.
+if [[ -v PLAYWRIGHT_MCP_EXTENSION_TOKEN ]]; then
+  token_is_forwarded=0
+  IFS=':' read -r -a wslenv_entries <<< "${WSLENV:-}"
+  for wslenv_entry in "${wslenv_entries[@]}"; do
+    if [[ "${wslenv_entry%%/*}" == "PLAYWRIGHT_MCP_EXTENSION_TOKEN" &&
+          ( "${wslenv_entry}" != */* || "${wslenv_entry#*/}" == *w* ) ]]; then
+      token_is_forwarded=1
+      break
+    fi
+  done
+
+  if (( token_is_forwarded == 0 )); then
+    export WSLENV="${WSLENV:+${WSLENV}:}PLAYWRIGHT_MCP_EXTENSION_TOKEN/w"
+  fi
+fi
+
 if [[ -z "${cli_ps1}" && "${PLAYWRIGHT_CLI_REFRESH:-0}" != "1" && -r "${cache_file}" ]]; then
   IFS= read -r cli_ps1 < "${cache_file}"
 fi
