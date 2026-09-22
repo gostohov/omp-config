@@ -12,40 +12,6 @@ providers:
   maxInFlightRequests:
     ais: 6
 
-  # Публичный поиск разрешён только через локальный SearXNG.
-  webSearchOrder:
-    - searxng
-  webSearchExclude:
-    - perplexity
-    - gemini
-    - anthropic
-    - codex
-    - xai
-    - zai
-    - exa
-    - tinyfish
-    - jina
-    - kagi
-    - tavily
-    - firecrawl
-    - brave
-    - kimi
-    - parallel
-    - synthetic
-    - startpage
-    - duckduckgo
-    - ecosia
-    - google
-    - mojeek
-    - public
-
-  # Заголовки генерируются лёгкой локальной CPU-моделью. Память использует
-  # корпоративный AIS endpoint, а проверка преждевременной остановки —
-  # локальную модель, предназначенную для memory/classifier-задач.
-  tinyModel: lfm2.5-230m
-  memoryModel: online
-  unexpectedStopModel: lfm2-1.2b
-
 exa:
   enabled: false
 
@@ -119,15 +85,20 @@ topK: 20
 presencePenalty: 1.5
 repetitionPenalty: 1.0
 
-# Все роли направляем через проверенный Anthropic Messages transport.
-# Формат роли — строка provider/model:thinking, а не объект.
+# Основные роли направляем через проверенный Anthropic Messages transport.
+# Специализированные роли фиксируют локальный SearXNG, локальные title/judge-
+# модели и AIS для задач памяти. Формат роли — строка или список селекторов,
+# разделённых запятыми.
 modelRoles:
   default: "ais/qwen3.6:27b:off"
   plan: "ais/qwen3.6:27b:off"
   slow: "ais/qwen3.6:27b:off"
   smol: "ais/qwen3.6:27b:off"
   task: "ais/qwen3.6:27b:off"
-  tiny: "ais/qwen3.6:27b:off"
+  web: "web/searxng"
+  tiny: "local/lfm2.5-230m,ais/qwen3.6:27b:off"
+  memory: "ais/qwen3.6:27b:off"
+  judge: "local/lfm2-1.2b"
   commit: "ais/qwen3.6:27b:off"
   vision: "ais/qwen3.6:27b:off"
 
