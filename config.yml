@@ -87,8 +87,7 @@ repetitionPenalty: 1.0
 
 # Основные роли направляем через проверенный Anthropic Messages transport.
 # Специализированные роли фиксируют локальный SearXNG, локальные title/judge-
-# модели и AIS для задач памяти. Формат роли — строка или список селекторов,
-# разделённых запятыми.
+# модели и AIS для задач памяти.
 modelRoles:
   default: "ais/qwen3.6:27b:off"
   plan: "ais/qwen3.6:27b:off"
@@ -96,7 +95,7 @@ modelRoles:
   smol: "ais/qwen3.6:27b:off"
   task: "ais/qwen3.6:27b:off"
   web: "web/searxng"
-  tiny: "local/lfm2.5-230m,ais/qwen3.6:27b:off"
+  tiny: "local/lfm2.5-230m"
   memory: "ais/qwen3.6:27b:off"
   judge: "local/lfm2-1.2b"
   commit: "ais/qwen3.6:27b:off"
@@ -109,6 +108,14 @@ retry:
   baseDelayMs: 500
   maxDelayMs: 30000
   modelFallback: false
+  # Явные пустые цепочки не позволяют OMP подставлять встроенные fallback-
+  # модели. Chat-роли наследуют default; service-роли фиксируются отдельно.
+  fallbackChains:
+    default: []
+    tiny: []
+    memory: []
+    web: []
+    judge: []
 
 # Фоновые task-задания включены явно.
 async:
