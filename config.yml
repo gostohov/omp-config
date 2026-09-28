@@ -49,6 +49,11 @@ startup:
 share:
   redactSecrets: true
 
+# Не экспортируем traces, logs и metrics во внешние OTLP endpoints, даже если
+# в окружении случайно заданы OTEL_* переменные.
+telemetry:
+  otlpExportEnabled: false
+
 # Не очищаем terminal scrollback при изменении размера окна. Старые строки
 # сохраняют прежний перенос, а текущий viewport перерисовывается без потери
 # предшествующей запуску OMP истории.
@@ -140,8 +145,8 @@ tools:
   # модель явно объявлена с supportsTools: true.
   format: auto
 
-# Направляем Qwen к специализированным read/grep/write/hub tools вместо их
-# менее наблюдаемых shell-аналогов.
+# Направляем Qwen к специализированным read/grep/write/wait tools и proc://
+# вместо их менее наблюдаемых shell-аналогов.
 bashInterceptor:
   enabled: true
 
