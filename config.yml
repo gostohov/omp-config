@@ -60,6 +60,10 @@ telemetry:
 tui:
   resizeScrollback: preserve
 
+# Показываем под закреплёнными sub-агентами их текущий или последний tool call.
+display:
+  subagentLivePreview: true
+
 # Встроенный browser и relay выключены: авторизованным Windows Chrome управляет
 # установленный отдельно Playwright CLI skill через WSL-wrapper.
 browser:
